@@ -9,6 +9,13 @@ autotools_package 'tools/gecode' do |pkg|
         pkg.depends_on "qt5"
         pkg.configureflags << "--enable-qt"
         pkg.configureflags << "--enable-gist"
+        # override autodetection of qmake and moc, gecode 6.2 prefers qt4 for those
+        pkg.env_add 'QMAKE', '/usr/bin/qmake'
+        pkg.env_add 'MOC', '/usr/bin/moc'
+        # override for systems where qtchooser switches between versions
+        pkg.env_add 'QT_SELECT', '5'
+    else
+        pkg.configureflags << "--disable-qt"
     end
 end
 
