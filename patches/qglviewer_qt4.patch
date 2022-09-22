@@ -1,0 +1,116 @@
+From 98fd79a5567052797fc3a6dff34149035a6f4240 Mon Sep 17 00:00:00 2001
+From: Anna Born <anna.born@dfki.de>
+Date: Mon, 25 Jul 2022 11:43:24 +0200
+Subject: [PATCH] add cmake and pc
+---
+ CMakeLists.txt           | 49 ++++++++++++++++++++++++++++++++++++++++
+ QGLViewer.pc.in          | 12 ++++++++++
+ QGLViewer/CMakeLists.txt | 21 +++++++++++++++++
+ 3 files changed, 82 insertions(+)
+ create mode 100644 CMakeLists.txt
+ create mode 100644 QGLViewer.pc.in
+ create mode 100644 QGLViewer/CMakeLists.txt
+diff --git CMakeLists.txt CMakeLists.txt
+new file mode 100644
+index 0000000..7fd88df
+--- /dev/null
++++ CMakeLists.txt
+@@ -0,0 +1,49 @@
++cmake_minimum_required(VERSION 3.5)
++
++project(QGLViewer VERSION 0.1 LANGUAGES CXX)
++
++set(CMAKE_INCLUDE_CURRENT_DIR ON)
++
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
++add_subdirectory(QGLViewer)
++
++# --- generate pkg config file
++configure_file(QGLViewer.pc.in QGLViewer.pc @ONLY)
++install(
++   FILES ${PROJECT_BINARY_DIR}/QGLViewer.pc
++   DESTINATION lipkgconfig
++)
++
++install(
++   FILES QGLViewer/qglviewer.h 
++         QGLViewer/camera.h 
++         QGLViewer/manipulatedFrame.h 
++         QGLViewer/manipulatedCameraFrame.h 
++         QGLViewer/frame.h 
++         QGLViewer/constraint.h 
++         QGLViewer/keyFrameInterpolator.h 
++         QGLViewer/mouseGrabber.h 
++         QGLViewer/quaternion.h 
++         QGLViewer/vec.h 
++         QGLViewer/domUtils.h 
++         QGLViewer/config.h
++   DESTINATION include/QGLViewer
++)
++
++install(
++   FILES QGLViewer/libQGLViewer.so.2.6.3
++         QGLViewer/libQGLViewer.prl
++   DESTINATION lib
++)
++
++set( legacy_target ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2.6.3)
++
++set( legacy_link_0 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so)
++set( legacy_link_1 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2)
++set( legacy_link_2 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2.6)
++
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_0})")
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_1})")
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_2})")
+\ No newline at end of file
+diff --git QGLViewer.pc.in QGLViewer.pc.in
+new file mode 100644
+index 0000000..8ef128c
+--- /dev/null
++++ QGLViewer.pc.in
+@@ -0,0 +1,12 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=${prefix}/lib
++includedir=${prefix}/include
++
++Name: @CMAKE_PROJECT_NAME@
++Description: @CMAKE_PROJECT_DESCRIPTION@
++Version: @CMAKE_PROJECT_VERSION@
++Requires: 
++Libs: -L${libdir} -l@CMAKE_PROJECT_NAME@
++Cflags: -I${includedir} 
++
+diff --git QGLViewer/CMakeLists.txt QGLViewer/CMakeLists.txt
+new file mode 100644
+index 0000000..8a66d59
+--- /dev/null
++++ QGLViewer/CMakeLists.txt
+@@ -0,0 +1,21 @@
++find_program(QMAKE-QT4 qmake-qt4)
++
++message(STATUS "${CMAKE_HOME_DIRECTORY}")
++
++if (QMAKE-QT4)
++    message(STATUS "\t generating Makefile using qmake-qt4") 
++    execute_process(
++        WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
++        COMMAND qmake-qt4 PREFIX=${CMAKE_INSTALL_PREFIX}
++        OUTPUT_QUIET
++    )
++
++    message(STATUS "\t building library (this may take some time...)")
++    execute_process(
++        WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
++        COMMAND make
++        OUTPUT_QUIET
++    )      
++else(QMAKE-QT4)
++    message(FATAL_ERROR "\t there is no qmake-qt4")  
++endif(QMAKE-QT4)
+\ No newline at end of file
+-- 
+2.25.1

@@ -1,0 +1,133 @@
+From e9435f715fb2d0a7777e40affe8eac66c835c114 Mon Sep 17 00:00:00 2001
+From: Anna Born <anna.born@dfki.de>
+Date: Mon, 25 Jul 2022 11:48:14 +0200
+Subject: [PATCH] use external qglviewer
+
+---
+ octovis/CMakeLists.txt                 | 5 ++++-
+ octovis/CMakeLists_src.txt             | 7 +++----
+ octovis/include/octovis/SelectionBox.h | 2 +-
+ octovis/include/octovis/ViewerWidget.h | 2 +-
+ octovis/src/OcTreeDrawer.cpp           | 2 +-
+ octovis/src/SelectionBox.cpp           | 2 +-
+ octovis/src/ViewerWidget.cpp           | 2 +-
+ 7 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git octovis/CMakeLists.txt octovis/CMakeLists.txt
+index 37afa04..262e532 100644
+--- octovis/CMakeLists.txt
++++ octovis/CMakeLists.txt
+@@ -76,7 +76,9 @@ endif(NOT OCTOVIS_QT5)
+ IF (OpenGL-NOTFOUND OR Qt4-NOTFOUND) 
+ 	MESSAGE ( "OpenGL and QT4 are required for octovis but could not be found.")	
+ ELSE()
+-	FIND_PACKAGE(QGLViewer)
++	#FIND_PACKAGE(QGLViewer)
++  find_package(PkgConfig)
++  pkg_check_modules(QGLViewer REQUIRED QGLViewer)
+ 	IF(QGLViewer_FOUND)
+ 	  SET( BUILD_VIEWER 1)
+ 	ELSE()
+@@ -98,6 +100,7 @@ IF(BUILD_VIEWER)
+   # Create an octovis-config.cmake file for the use from the build tree
+   set(OCTOVIS_INCLUDE_DIRS "${INCLUDE_DIRS}")
+   set(OCTOVIS_LIB_DIR     "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
++
+   # Set library names as absolute paths
+   # Windows, spec. MSVC requires the .lib suffix for imported libs
+   IF(WIN32)
+diff --git octovis/CMakeLists_src.txt octovis/CMakeLists_src.txt
+index 35bc1f2..9ab1b92 100644
+--- octovis/CMakeLists_src.txt
++++ octovis/CMakeLists_src.txt
+@@ -57,11 +57,10 @@ else(OCTOVIS_QT5)
+   QT4_ADD_RESOURCES(viewer_RES src/icons.qrc)
+ endif(OCTOVIS_QT5)
+ 
+-#found QGLViewer lib dir
+-link_directories(${QGLViewer_LIBRARY_DIR})
++link_directories(${QGLViewer_LIBRARY_DIRS})
+ 
+ INCLUDE_DIRECTORIES(
+-  ${QGLViewer_INCLUDE_DIR}
++  ${QGLViewer_INCLUDE_DIRS}
+ )
+ 
+ SET(viewer_MOC_HDRS
+@@ -104,7 +103,7 @@ target_link_libraries(octovis-static
+   ${OPENGL_gl_LIBRARY} 
+   ${OPENGL_glu_LIBRARY} 
+   ${OCTOMAP_LIBRARIES}
+-  ${QGLViewer_LIBRARIES}
++  ${QGLViewer_LIBRARY_DIRS}/${QGLViewer_LIBRARIES}
+ )
+ set_target_properties(octovis-static PROPERTIES OUTPUT_NAME octovis)
+ 
+diff --git octovis/include/octovis/SelectionBox.h octovis/include/octovis/SelectionBox.h
+index 1d93dca..acb6daa 100644
+--- octovis/include/octovis/SelectionBox.h
++++ octovis/include/octovis/SelectionBox.h
+@@ -25,7 +25,7 @@
+ #ifndef SELECTIONBOX_H_
+ #define SELECTIONBOX_H_
+ 
+-#include <qglviewer.h>
++#include <QGLViewer/qglviewer.h>
+ 
+ namespace octomap {
+   class SelectionBox{
+diff --git octovis/include/octovis/ViewerWidget.h octovis/include/octovis/ViewerWidget.h
+index 6788d3e..8c581e7 100644
+--- octovis/include/octovis/ViewerWidget.h
++++ octovis/include/octovis/ViewerWidget.h
+@@ -28,7 +28,7 @@
+ #include "SceneObject.h"
+ #include "SelectionBox.h"
+ #include <octomap/octomap.h>
+-#include <qglviewer.h>
++#include <QGLViewer/qglviewer.h>
+ 
+ namespace octomap{
+ 
+diff --git octovis/src/OcTreeDrawer.cpp octovis/src/OcTreeDrawer.cpp
+index 8b6e6a9..f66905d 100644
+--- octovis/src/OcTreeDrawer.cpp
++++ octovis/src/OcTreeDrawer.cpp
+@@ -23,7 +23,7 @@
+  */
+ 
+ #include <octovis/OcTreeDrawer.h>
+-#include <qglviewer.h>
++#include <QGLViewer/qglviewer.h>
+ 
+ #define OTD_RAD2DEG 57.2957795
+ 
+diff --git octovis/src/SelectionBox.cpp octovis/src/SelectionBox.cpp
+index e1691af..c482429 100644
+--- octovis/src/SelectionBox.cpp
++++ octovis/src/SelectionBox.cpp
+@@ -25,7 +25,7 @@
+ // workaround for Windows
+ #define NOMINMAX
+ #include <octovis/SelectionBox.h>
+-#include <manipulatedFrame.h>
++#include <QGLViewer/manipulatedFrame.h>
+ 
+ namespace octomap{
+ 
+diff --git octovis/src/ViewerWidget.cpp octovis/src/ViewerWidget.cpp
+index 2937737..98c8b18 100644
+--- octovis/src/ViewerWidget.cpp
++++ octovis/src/ViewerWidget.cpp
+@@ -23,7 +23,7 @@
+  */
+ 
+ #include <octovis/ViewerWidget.h>
+-#include <manipulatedCameraFrame.h>
++#include <QGLViewer/manipulatedCameraFrame.h>
+ 
+ #ifndef M_PI_2
+ #define M_PI_2 1.5707963267948966192E0
+-- 
+2.25.1
+
