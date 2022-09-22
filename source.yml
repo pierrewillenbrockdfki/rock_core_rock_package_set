@@ -272,6 +272,7 @@ version_control:
     - slam/octomap:
         github: octomap/octomap
         branch: master
+        patches: $AUTOPROJ_SOURCE_DIR/patches/octomap.patch
 
     - slam/ceres_solver:
         type: git
