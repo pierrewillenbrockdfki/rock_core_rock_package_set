@@ -37,7 +37,7 @@ index 37afa04..262e532 100644
    # Windows, spec. MSVC requires the .lib suffix for imported libs
    IF(WIN32)
 diff --git octovis/CMakeLists_src.txt octovis/CMakeLists_src.txt
-index 35bc1f2..9ab1b92 100644
+index 35bc1f2..8a6aacf 100644
 --- octovis/CMakeLists_src.txt
 +++ octovis/CMakeLists_src.txt
 @@ -57,11 +57,10 @@ else(OCTOVIS_QT5)
@@ -54,14 +54,15 @@ index 35bc1f2..9ab1b92 100644
  )
  
  SET(viewer_MOC_HDRS
-@@ -104,7 +103,7 @@ target_link_libraries(octovis-static
-   ${OPENGL_gl_LIBRARY} 
-   ${OPENGL_glu_LIBRARY} 
+@@ -134,7 +133,7 @@ endif()
+ add_executable(octovis ${viewer_SRCS} ${viewer_UIS_H} ${viewer_MOC_SRCS} ${viewer_RES})
+ 
+ target_link_libraries(octovis 
+-#  ${QGLViewer_LIBRARIES}
++  #${QGLViewer_LIBRARIES}
+   ${QT_LIBRARIES}
    ${OCTOMAP_LIBRARIES}
--  ${QGLViewer_LIBRARIES}
-+  ${QGLViewer_LIBRARY_DIRS}/${QGLViewer_LIBRARIES}
- )
- set_target_properties(octovis-static PROPERTIES OUTPUT_NAME octovis)
+   octovis-shared
  
 diff --git octovis/include/octovis/SelectionBox.h octovis/include/octovis/SelectionBox.h
 index 1d93dca..acb6daa 100644
