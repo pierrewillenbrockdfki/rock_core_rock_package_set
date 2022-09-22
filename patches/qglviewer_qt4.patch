@@ -56,15 +56,15 @@ index 0000000..7fd88df
 +   DESTINATION lib
 +)
 +
-+set( legacy_target ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2.6.3)
++set( legacy_target ${CMAKE_INSTALL_PREFIX}/lib/libQGLViewer.so.2.6.3)
 +
-+set( legacy_link_0 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so)
-+set( legacy_link_1 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2)
-+set( legacy_link_2 ${CMAKE_INSTALL_PREFIX}/lilibQGLViewer.so.2.6)
++set( legacy_link_0 ${CMAKE_INSTALL_PREFIX}/lib/libQGLViewer.so)
++set( legacy_link_1 ${CMAKE_INSTALL_PREFIX}/lib/libQGLViewer.so.2)
++set( legacy_link_2 ${CMAKE_INSTALL_PREFIX}/lib/libQGLViewer.so.2.6)
 +
-+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_0})")
-+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_1})")
-+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \$ENV{DESTDIR}${legacy_target} \$ENV{DESTDIR}${legacy_link_2})")
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${legacy_target} \$ENV{DESTDIR}${legacy_link_0})")
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${legacy_target} \$ENV{DESTDIR}${legacy_link_1})")
++install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${legacy_target} \$ENV{DESTDIR}${legacy_link_2})")
 \ No newline at end of file
 diff --git QGLViewer.pc.in QGLViewer.pc.in
 new file mode 100644
