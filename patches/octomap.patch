@@ -1,134 +1,103 @@
-From e9435f715fb2d0a7777e40affe8eac66c835c114 Mon Sep 17 00:00:00 2001
+From 862b18c0fb0287185dbe5a6f78676becd59433e6 Mon Sep 17 00:00:00 2001
 From: Anna Born <anna.born@dfki.de>
-Date: Mon, 25 Jul 2022 11:48:14 +0200
-Subject: [PATCH] use external qglviewer
+Date: Fri, 23 Sep 2022 12:27:54 +0200
+Subject: [PATCH 1/1] use local rock qglviewer installation, if no other
+ version was found
 
 ---
- octovis/CMakeLists.txt                 | 5 ++++-
- octovis/CMakeLists_src.txt             | 7 +++----
- octovis/include/octovis/SelectionBox.h | 2 +-
- octovis/include/octovis/ViewerWidget.h | 2 +-
- octovis/src/OcTreeDrawer.cpp           | 2 +-
- octovis/src/SelectionBox.cpp           | 2 +-
- octovis/src/ViewerWidget.cpp           | 2 +-
- 7 files changed, 12 insertions(+), 10 deletions(-)
+ octovis/CMakeModules/FindQGLViewer.cmake | 62 +++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 18 deletions(-)
 
-diff --git octovis/CMakeLists.txt octovis/CMakeLists.txt
-index 37afa04..262e532 100644
---- octovis/CMakeLists.txt
-+++ octovis/CMakeLists.txt
-@@ -76,7 +76,9 @@ endif(NOT OCTOVIS_QT5)
- IF (OpenGL-NOTFOUND OR Qt4-NOTFOUND) 
- 	MESSAGE ( "OpenGL and QT4 are required for octovis but could not be found.")	
- ELSE()
--	FIND_PACKAGE(QGLViewer)
-+	#FIND_PACKAGE(QGLViewer)
-+  find_package(PkgConfig)
-+  pkg_check_modules(QGLViewer REQUIRED QGLViewer)
- 	IF(QGLViewer_FOUND)
- 	  SET( BUILD_VIEWER 1)
- 	ELSE()
-@@ -98,6 +100,7 @@ IF(BUILD_VIEWER)
-   # Create an octovis-config.cmake file for the use from the build tree
-   set(OCTOVIS_INCLUDE_DIRS "${INCLUDE_DIRS}")
-   set(OCTOVIS_LIB_DIR     "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+diff --git octovis/CMakeModules/FindQGLViewer.cmake octovis/CMakeModules/FindQGLViewer.cmake
+index 982d294..65d218d 100644
+--- octovis/CMakeModules/FindQGLViewer.cmake
++++ octovis/CMakeModules/FindQGLViewer.cmake
+@@ -9,32 +9,55 @@
+ # QGLViewer_LIBRARIES        list of libraries to link
+ # QGLViewer_FOUND            true if QGLViewer was found
+ 
+-SET( QGLViewer_FOUND 0 CACHE BOOL "Do we have QGLViewer?" )
++# we have several cases:
++# 1. ubuntu 18 + qt4 = libqglviewer-dev-qt4
++# 2. ubuntu 18/20 + qt5 = libqglviewer-dev-qt5
++# 3. ubuntu 20 + qt4 = qglviewer_qt4 local installation under rock install folder
+ 
+-FIND_PATH( QGLVIEWER_BASE_DIR qglviewer.h
+-  ${CMAKE_SOURCE_DIR}/src/extern/QGLViewer
+-  ${CMAKE_SOURCE_DIR}/octovis/src/extern/QGLViewer
+-)
++# first find out, if we have any qglviewer already available
++# this will fail just in case of ubunut 20 + qt4
++IF(QT4_FOUND)
++    FIND_LIBRARY(QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt4 QGLViewer-qt4)
++ELSE()
++    FIND_LIBRARY(QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt5 QGLViewer-qt5)
++ENDIF()
+ 
+-FIND_PATH( QGLViewer_INCLUDE_DIR qglviewer.h
++# if no qglviewer lib was found
++# than we are probably in case of ubunut 20 + qt4
++# or you have just forgotten to install qglviewer
++# no matter, we will try to use local rock installation
++IF(QGLViewer_LIBRARY_DIR_UBUNTU)
++  IF(QT4_FOUND)
++    MESSAGE(STATUS "QGLViewer library for QT4 is found: ${QGLViewer_LIBRARY_DIR_UBUNTU}")
++  ELSE()
++    MESSAGE(STATUS "QGLViewer library for QT5 is found: ${QGLViewer_LIBRARY_DIR_UBUNTU}")
++  ENDIF()
 +
-   # Set library names as absolute paths
-   # Windows, spec. MSVC requires the .lib suffix for imported libs
-   IF(WIN32)
-diff --git octovis/CMakeLists_src.txt octovis/CMakeLists_src.txt
-index 35bc1f2..8a6aacf 100644
---- octovis/CMakeLists_src.txt
-+++ octovis/CMakeLists_src.txt
-@@ -57,11 +57,10 @@ else(OCTOVIS_QT5)
-   QT4_ADD_RESOURCES(viewer_RES src/icons.qrc)
- endif(OCTOVIS_QT5)
++  FIND_PATH( QGLViewer_INCLUDE_DIR qglviewer.h
+     /usr/include/qglviewer-qt4
+     /usr/include/QGLViewer
+     /opt/local/include/QGLViewer
+-    ${QGLVIEWER_BASE_DIR}
+-)
+-
+-IF( QT4_FOUND )
+-    FIND_LIBRARY( QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt4 QGLViewer-qt4)
++  )
+ ELSE()
+-    FIND_LIBRARY( QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt5 QGLViewer-qt5)
++  IF(QT4_FOUND)
++    MESSAGE(STATUS "QGLViewer library for QT4 is NOT found. Search for local rock installation.")
++    find_package(PkgConfig)
++    pkg_check_modules(QGLViewer_LOCAL REQUIRED QGLViewer)
++    IF(QGLViewer_LOCAL_FOUND)
++      MESSAGE(STATUS "QGLViewer library for QT4 is found in local rock installation:${QGLViewer_LOCAL_LIBRARY_DIRS}")
++      SET(QGLViewer_LIBRARY_DIR_UBUNTU ${QGLViewer_LOCAL_LINK_LIBRARIES})
++      SET(QGLViewer_INCLUDE_DIR 
++        ${QGLViewer_LOCAL_INCLUDE_DIRS}
++        "${QGLViewer_LOCAL_INCLUDE_DIRS}/QGLViewer")
++    ELSE()
++      MESSAGE(FATAL_ERROR "QGLViewer library for QT4 is NOT found.")    
++    ENDIF()
++  ELSE()
++    MESSAGE(FATAL_ERROR "QGLViewer library for QT5 is NOT found.")     
++  ENDIF()
+ ENDIF()
+-FIND_LIBRARY( QGLViewer_LIBRARY_DIR_WINDOWS QGLViewer2 ${QGLVIEWER_BASE_DIR})
+-FIND_LIBRARY( QGLViewer_LIBRARY_DIR_OTHER QGLViewer ${QGLVIEWER_BASE_DIR})
+-
+-SET( BUILD_LIB_FROM_SOURCE 0)
  
--#found QGLViewer lib dir
--link_directories(${QGLViewer_LIBRARY_DIR})
-+link_directories(${QGLViewer_LIBRARY_DIRS})
+ IF( QGLViewer_INCLUDE_DIR )
+-
+   MESSAGE(STATUS "QGLViewer includes found in ${QGLViewer_INCLUDE_DIR}")
+   IF (QGLViewer_LIBRARY_DIR_UBUNTU)
+     MESSAGE(STATUS "QGLViewer library found in ${QGLViewer_LIBRARY_DIR_UBUNTU}")
+@@ -55,9 +78,12 @@ IF( QGLViewer_INCLUDE_DIR )
+   ENDIF()    
  
- INCLUDE_DIRECTORIES(
--  ${QGLViewer_INCLUDE_DIR}
-+  ${QGLViewer_INCLUDE_DIRS}
- )
+ ELSE()
+-  SET( BUILD_LIB_FROM_SOURCE 1)
++  MESSAGE(FATAL_ERROR "QGLViewer library NOT found.")  
+ ENDIF()
  
- SET(viewer_MOC_HDRS
-@@ -134,7 +133,7 @@ endif()
- add_executable(octovis ${viewer_SRCS} ${viewer_UIS_H} ${viewer_MOC_SRCS} ${viewer_RES})
- 
- target_link_libraries(octovis 
--#  ${QGLViewer_LIBRARIES}
-+  #${QGLViewer_LIBRARIES}
-   ${QT_LIBRARIES}
-   ${OCTOMAP_LIBRARIES}
-   octovis-shared
- 
-diff --git octovis/include/octovis/SelectionBox.h octovis/include/octovis/SelectionBox.h
-index 1d93dca..acb6daa 100644
---- octovis/include/octovis/SelectionBox.h
-+++ octovis/include/octovis/SelectionBox.h
-@@ -25,7 +25,7 @@
- #ifndef SELECTIONBOX_H_
- #define SELECTIONBOX_H_
- 
--#include <qglviewer.h>
-+#include <QGLViewer/qglviewer.h>
- 
- namespace octomap {
-   class SelectionBox{
-diff --git octovis/include/octovis/ViewerWidget.h octovis/include/octovis/ViewerWidget.h
-index 6788d3e..8c581e7 100644
---- octovis/include/octovis/ViewerWidget.h
-+++ octovis/include/octovis/ViewerWidget.h
-@@ -28,7 +28,7 @@
- #include "SceneObject.h"
- #include "SelectionBox.h"
- #include <octomap/octomap.h>
--#include <qglviewer.h>
-+#include <QGLViewer/qglviewer.h>
- 
- namespace octomap{
- 
-diff --git octovis/src/OcTreeDrawer.cpp octovis/src/OcTreeDrawer.cpp
-index 8b6e6a9..f66905d 100644
---- octovis/src/OcTreeDrawer.cpp
-+++ octovis/src/OcTreeDrawer.cpp
-@@ -23,7 +23,7 @@
-  */
- 
- #include <octovis/OcTreeDrawer.h>
--#include <qglviewer.h>
-+#include <QGLViewer/qglviewer.h>
- 
- #define OTD_RAD2DEG 57.2957795
- 
-diff --git octovis/src/SelectionBox.cpp octovis/src/SelectionBox.cpp
-index e1691af..c482429 100644
---- octovis/src/SelectionBox.cpp
-+++ octovis/src/SelectionBox.cpp
-@@ -25,7 +25,7 @@
- // workaround for Windows
- #define NOMINMAX
- #include <octovis/SelectionBox.h>
--#include <manipulatedFrame.h>
-+#include <QGLViewer/manipulatedFrame.h>
- 
- namespace octomap{
- 
-diff --git octovis/src/ViewerWidget.cpp octovis/src/ViewerWidget.cpp
-index 2937737..98c8b18 100644
---- octovis/src/ViewerWidget.cpp
-+++ octovis/src/ViewerWidget.cpp
-@@ -23,7 +23,7 @@
-  */
- 
- #include <octovis/ViewerWidget.h>
--#include <manipulatedCameraFrame.h>
-+#include <QGLViewer/manipulatedCameraFrame.h>
- 
- #ifndef M_PI_2
- #define M_PI_2 1.5707963267948966192E0
++# we dont want to build qglviewer from local source code
++SET( BUILD_LIB_FROM_SOURCE 0)
++
+ # build own libQGLViewer
+ IF(BUILD_LIB_FROM_SOURCE)
+   
 -- 
 2.25.1
-
