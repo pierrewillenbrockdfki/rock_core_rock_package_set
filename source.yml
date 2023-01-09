@@ -193,8 +193,22 @@ version_control:
     - slam/g2o:
         github: RainerKuemmerle/g2o.git
         branch: master
+        # last working commit with our patch (checked on 2022.12.09)
+        commit: 7ad5ade506f7a00dae5abbaf414ae3f5312e5583
         patches:
             - $AUTOPROJ_SOURCE_DIR/patches/g2o_build4.patch
+
+    - slam/pclomp:
+        github: dfki-ric/pclomp
+
+    - slam/slam3d:
+        github: dfki-ric/slam3d
+
+    - slam/orogen/slam3d:
+        github: dfki-ric/orogen-slam3d
+
+    - slam/orogen/maps:
+        github: dfki-ric/slam-orogen-maps
 
     - external/tinyxml:
         type: archive
@@ -475,3 +489,4 @@ version_control:
     - tools/seasocks:
         github: mattgodbolt/seasocks
         tag: v1.4.3
+
