@@ -3,6 +3,8 @@ cmake_package 'gui/qglviewer_qt4'
 remove_from_default 'gui/qglviewer_qt4'
 Autoproj.add_osdeps_overrides 'libqglviewer', :package=> 'gui/qglviewer_qt4'
 
+cmake_package "database/redis/hiredis"
+
 cmake_package 'slam/pclomp'
 cmake_package 'slam/slam3d' do |pkg|
     pkg.define 'BUILD_SHARED_LIBS', 'TRUE'

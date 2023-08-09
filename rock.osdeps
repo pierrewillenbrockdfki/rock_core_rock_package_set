@@ -433,7 +433,7 @@ libusb1_0_13:
 
 libvlc:
     debian: libvlc-dev
-    ubuntu: libvlc-dev
+    ubuntu: [libvlc-dev, vlc-plugin-base]
     # opensuse: libvlc-devel # available in repository Packman
     gentoo: media-video/vlc
 
@@ -557,6 +557,7 @@ soqt:
 soqt5:
     ubuntu:
         '20.04': libsoqt520-dev
+        '18.04': nonexistent
 
 soup:
     ubuntu,debian: libsoup2.4-dev

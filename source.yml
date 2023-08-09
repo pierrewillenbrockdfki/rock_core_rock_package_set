@@ -161,7 +161,11 @@ version_control:
         type: git
         github: aibasel/downward
         patches: $AUTOPROJ_SOURCE_DIR/patches/fast_downward.patch
-        branch: main
+        #branch: main
+        # pinned to the last commit before they require c++20
+        # (available starting with gcc-10 and clang-12, which are not
+        # available in ubuntu 18.04, not default in 20.04)
+        commit: fe473a2011c84f9082068a30fae8653e3823ea7f
 
     - planning/randward:
         github: rock-planning/planning-$PACKAGE_BASENAME
@@ -192,11 +196,6 @@ version_control:
 
     - slam/g2o:
         github: RainerKuemmerle/g2o.git
-        branch: master
-        # last working commit with our patch (checked on 2022.12.09)
-        commit: 7ad5ade506f7a00dae5abbaf414ae3f5312e5583
-        patches:
-            - $AUTOPROJ_SOURCE_DIR/patches/g2o_build4.patch
 
     - slam/pclomp:
         github: dfki-ric/pclomp
@@ -257,6 +256,9 @@ version_control:
         github: rock-data-processing/data_processing-orogen-$PACKAGE_BASENAME
         branch: $ROCK_BRANCH
 
+    - database/redis/hiredis:
+      github: redis/hiredis
+
     - drivers/aria:
         type: archive
         url: http://robots.mobilerobots.com/ARIA/download/archives/ARIA-2.7.5+gcc4.3.tgz
@@ -308,10 +310,7 @@ version_control:
             - [$AUTOPROJ_SOURCE_DIR/patches/gsf-cmake.patch, 1]
 
     - perception/apriltags:
-        type: archive
-        url: https://april.eecs.umich.edu/media/apriltag/apriltag-2015-03-18.tgz
-        patches:
-            - $AUTOPROJ_SOURCE_DIR/patches/apriltags.patch
+        github: AprilRobotics/apriltag
 
     - perception/viso2:
         type: archive
