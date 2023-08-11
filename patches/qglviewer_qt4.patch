@@ -31,7 +31,7 @@ index 0000000..7fd88df
 +configure_file(QGLViewer.pc.in QGLViewer.pc @ONLY)
 +install(
 +   FILES ${PROJECT_BINARY_DIR}/QGLViewer.pc
-+   DESTINATION lipkgconfig
++   DESTINATION lib/pkgconfig
 +)
 +
 +install(
