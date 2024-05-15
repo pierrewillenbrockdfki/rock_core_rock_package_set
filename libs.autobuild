@@ -309,7 +309,9 @@ in_flavor 'master', 'stable' do
     end
     cmake_package 'simulation/imumodel'
 
-    cmake_package 'slam/octomap'
+    cmake_package 'slam/octomap' do |pkg|
+        pkg.define "OCTOVIS_QT5", "ON"
+    end
 
     cmake_package "drivers/freenect" do |pkg|
         pkg.define "BUILD_AUDIO", "ON"

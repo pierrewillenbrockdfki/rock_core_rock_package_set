@@ -1,0 +1,103 @@
+From 862b18c0fb0287185dbe5a6f78676becd59433e6 Mon Sep 17 00:00:00 2001
+From: Anna Born <anna.born@dfki.de>
+Date: Fri, 23 Sep 2022 12:27:54 +0200
+Subject: [PATCH 1/1] use local rock qglviewer installation, if no other
+ version was found
+
+---
+ octovis/CMakeModules/FindQGLViewer.cmake | 62 +++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 18 deletions(-)
+
+diff --git octovis/CMakeModules/FindQGLViewer.cmake octovis/CMakeModules/FindQGLViewer.cmake
+index 982d294..65d218d 100644
+--- octovis/CMakeModules/FindQGLViewer.cmake
++++ octovis/CMakeModules/FindQGLViewer.cmake
+@@ -9,32 +9,55 @@
+ # QGLViewer_LIBRARIES        list of libraries to link
+ # QGLViewer_FOUND            true if QGLViewer was found
+ 
+-SET( QGLViewer_FOUND 0 CACHE BOOL "Do we have QGLViewer?" )
++# we have several cases:
++# 1. ubuntu 18 + qt4 = libqglviewer-dev-qt4
++# 2. ubuntu 18/20 + qt5 = libqglviewer-dev-qt5
++# 3. ubuntu 20 + qt4 = qglviewer_qt4 local installation under rock install folder
+ 
+-FIND_PATH( QGLVIEWER_BASE_DIR qglviewer.h
+-  ${CMAKE_SOURCE_DIR}/src/extern/QGLViewer
+-  ${CMAKE_SOURCE_DIR}/octovis/src/extern/QGLViewer
+-)
++# first find out, if we have any qglviewer already available
++# this will fail just in case of ubunut 20 + qt4
++IF(QT4_FOUND)
++    FIND_LIBRARY(QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt4 QGLViewer-qt4)
++ELSE()
++    FIND_LIBRARY(QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt5 QGLViewer-qt5)
++ENDIF()
+ 
+-FIND_PATH( QGLViewer_INCLUDE_DIR qglviewer.h
++# if no qglviewer lib was found
++# than we are probably in case of ubunut 20 + qt4
++# or you have just forgotten to install qglviewer
++# no matter, we will try to use local rock installation
++IF(QGLViewer_LIBRARY_DIR_UBUNTU)
++  IF(QT4_FOUND)
++    MESSAGE(STATUS "QGLViewer library for QT4 is found: ${QGLViewer_LIBRARY_DIR_UBUNTU}")
++  ELSE()
++    MESSAGE(STATUS "QGLViewer library for QT5 is found: ${QGLViewer_LIBRARY_DIR_UBUNTU}")
++  ENDIF()
++
++  FIND_PATH( QGLViewer_INCLUDE_DIR qglviewer.h
+     /usr/include/qglviewer-qt4
+     /usr/include/QGLViewer
+     /opt/local/include/QGLViewer
+-    ${QGLVIEWER_BASE_DIR}
+-)
+-
+-IF( QT4_FOUND )
+-    FIND_LIBRARY( QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt4 QGLViewer-qt4)
++  )
+ ELSE()
+-    FIND_LIBRARY( QGLViewer_LIBRARY_DIR_UBUNTU NAMES qglviewer-qt5 QGLViewer-qt5)
++  IF(QT4_FOUND)
++    MESSAGE(STATUS "QGLViewer library for QT4 is NOT found. Search for local rock installation.")
++    find_package(PkgConfig)
++    pkg_check_modules(QGLViewer_LOCAL REQUIRED QGLViewer)
++    IF(QGLViewer_LOCAL_FOUND)
++      MESSAGE(STATUS "QGLViewer library for QT4 is found in local rock installation:${QGLViewer_LOCAL_LIBRARY_DIRS}")
++      SET(QGLViewer_LIBRARY_DIR_UBUNTU ${QGLViewer_LOCAL_LINK_LIBRARIES})
++      SET(QGLViewer_INCLUDE_DIR 
++        ${QGLViewer_LOCAL_INCLUDE_DIRS}
++        "${QGLViewer_LOCAL_INCLUDE_DIRS}/QGLViewer")
++    ELSE()
++      MESSAGE(FATAL_ERROR "QGLViewer library for QT4 is NOT found.")    
++    ENDIF()
++  ELSE()
++    MESSAGE(FATAL_ERROR "QGLViewer library for QT5 is NOT found.")     
++  ENDIF()
+ ENDIF()
+-FIND_LIBRARY( QGLViewer_LIBRARY_DIR_WINDOWS QGLViewer2 ${QGLVIEWER_BASE_DIR})
+-FIND_LIBRARY( QGLViewer_LIBRARY_DIR_OTHER QGLViewer ${QGLVIEWER_BASE_DIR})
+-
+-SET( BUILD_LIB_FROM_SOURCE 0)
+ 
+ IF( QGLViewer_INCLUDE_DIR )
+-
+   MESSAGE(STATUS "QGLViewer includes found in ${QGLViewer_INCLUDE_DIR}")
+   IF (QGLViewer_LIBRARY_DIR_UBUNTU)
+     MESSAGE(STATUS "QGLViewer library found in ${QGLViewer_LIBRARY_DIR_UBUNTU}")
+@@ -55,9 +78,12 @@ IF( QGLViewer_INCLUDE_DIR )
+   ENDIF()    
+ 
+ ELSE()
+-  SET( BUILD_LIB_FROM_SOURCE 1)
++  MESSAGE(FATAL_ERROR "QGLViewer library NOT found.")  
+ ENDIF()
+ 
++# we dont want to build qglviewer from local source code
++SET( BUILD_LIB_FROM_SOURCE 0)
++
+ # build own libQGLViewer
+ IF(BUILD_LIB_FROM_SOURCE)
+   
+-- 
+2.25.1
