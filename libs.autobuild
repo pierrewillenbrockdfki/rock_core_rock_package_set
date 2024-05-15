@@ -19,15 +19,12 @@ cmake_package 'knowledge_reasoning/moreorg' do |pkg|
 end
 cmake_package 'control/joint_control_base'
 cmake_package 'tools/qxcfg'
-autotools_package 'tools/gecode' do |pkg|
-    if !Autoproj.config.get('DISABLE_GUI',false)
-        #pkg.depends_on "qt4"
-        pkg.configureflags << "--enable-qt"
-        pkg.configureflags << "--enable-gist"
-        pkg.configureflags << "QMAKE=/usr/bin/qmake"
-        pkg.configureflags << "MOC=/usr/bin/moc"
-    end
-end
+
+cmake_package 'tools/gecode' do |pkg|
+    pkg.define 'BUILD_SHARED_LIBS', 'TRUE'
+    pkg.define "ENABLE_GIST", "ON"
+
+end 
 
 cmake_package 'gui/vizkit3d_debug_drawings'
 orogen_package 'gui/orogen/vizkit3d_debug_drawings'
@@ -214,7 +211,7 @@ in_flavor 'master' do
         # Seamlessly migrate from the SVN to the archive. We must delete the svn
         # directory !
         if pkg.importer.kind_of?(Autobuild::ArchiveImporter) && File.directory?(File.join(pkg.srcdir, ".git"))
-            Autoproj.configuration_option "UPDATE_VISO2_FROM_GIT", "boolean",
+            Autoproj.config.declare "UPDATE_VISO2_FROM_GIT", "boolean",
                 :doc => ["delete perception/viso2 to update to a release tarball ?",
                     "Rock was previously checking out from a Git repository but just switched to",
                     "using the release tarball. Updating requires the deletion of the",
@@ -564,7 +561,7 @@ in_flavor 'master', 'stable' do
         # Seamlessly migrate from the SVN to the archive. We must delete the svn
         # directory !
         if pkg.importer.kind_of?(Autobuild::ArchiveImporter) && File.directory?(File.join(pkg.srcdir, ".svn"))
-            Autoproj.configuration_option "UPDATE_PCL_FROM_SVN", "boolean",
+            Autoproj.config.declare "UPDATE_PCL_FROM_SVN", "boolean",
                 :doc => ["delete slam/pcl to update to a release tarball ?",
                     "Rock was previously checking out the PCL SVN but just switched to",
                     "using the release tarball. Updating requires the deletion of the",
