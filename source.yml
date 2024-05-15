@@ -133,6 +133,11 @@ version_control:
     - gui/ffmpeg-ruby:
         branch: master
 
+    - gui/qglviewer_qt4:
+        github: GillesDebunne/libQGLViewer
+        tag: v2.6.3
+        patches: $AUTOPROJ_SOURCE_DIR/patches/qglviewer_qt4.patch
+
     - bundles/rock_multiagent:
         github: rock-multiagent/multiagent-bundle-rock_multiagent
         branch: master

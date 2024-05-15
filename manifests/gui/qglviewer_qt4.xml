@@ -1,0 +1,9 @@
+<package>
+  <description brief="libQGLViewer is a C++ library based on Qt that eases the creation of OpenGL 3D viewers.">
+  </description>
+  <author></author>
+  <license>GNU-GPL</license>
+  <url>http://libqglviewer.com</url>
+  <depend package="qt4"/>
+  <depend package="qt4-opengl"/>
+</package>

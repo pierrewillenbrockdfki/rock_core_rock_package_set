@@ -1,4 +1,7 @@
 #800 IMPORTANT: new packages must be added at the top of this file
+cmake_package 'gui/qglviewer_qt4'
+remove_from_default 'gui/qglviewer_qt4'
+Autoproj.add_osdeps_overrides 'libqglviewer', :package=> 'gui/qglviewer_qt4'
 
 cmake_package "database/redis/hiredis"
 
