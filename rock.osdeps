@@ -591,8 +591,7 @@ sysfs:
 tools/ignition-math2:
     ubuntu:
         '14.04,14.10,15.04,15.10': nonexistent
-        '18.04': libignition-math2-dev
-        '20.04': libignition-math4-dev
+        default: libignition-math2-dev
     debian:
         jessie,wheezy,squeeze: nonexistent
         default: libignition-math2-dev
